@@ -42,3 +42,4 @@ typedef struct s_pipex
 }	t_pipex
 
 
+/*pid1 is the parent and pid2 refers to the child */

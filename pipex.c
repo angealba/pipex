@@ -31,22 +31,36 @@ char	*find_path(char **envp)
 	return (*envp + 5);
 }
 
-int	main(int argc, char **argv, char **envp)
+void	close_pipes(t_pipex *pipex)
+{
+	close(pipex->tube[0]);
+	close(pipex->tube[1]);
+}
+
+int	main(int ac, char **av, char **envp)
 {
 	t_pipex	*pipex;
 
-	if (argc != 5)
+	if (ac != 5)
 		return (msg("Error in number of arguments."));
-	pipex->in_fd = open(argv[1], O_RDONLY);
+	pipex->in_fd = open(av[1], O_RDONLY);
 	if (pipex->in_fd < 0)
 		error_msg("Infile error.\n");
-	pipex->out_fd = open(argv[4], O_TRUNC | O_CREAT | O_RDWR, 0777);
+	pipex->out_fd = open(av[4], O_TRUNC | O_CREAT | O_RDWR, 0777);
 	if (out_fd < 0)
 		error_msg("Outfile error.\n");
 	if (pipe(pipex->tube) < 0)
 		error_msg("Pipe error.\n");
 	pipex->path = find_path(envp);
 	pipex->cmd_paths = ft_split(pipex->path, ':');
+	pipex->pid1 = fork();
+	if(pipex->pid1 == 0)
+		child_one(pipex, av, envp);
+	pipex->pid2 = fork();
+	if(pipex->pid2 == 0)
+		second_child(pipex, av, envp);
+	close_pipes(&pipex);
+	
 	
 
 
