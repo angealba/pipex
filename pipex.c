@@ -31,7 +31,7 @@ char	*find_path(char **envp)
 	return (*envp + 5);
 }
 
-void	close_pipes(t_pipex *pipex)
+void	close_ends(t_pipex *pipex)
 {
 	close(pipex->tube[0]);
 	close(pipex->tube[1]);
@@ -59,14 +59,9 @@ int	main(int ac, char **av, char **envp)
 	pipex->pid2 = fork();
 	if(pipex->pid2 == 0)
 		second_child(pipex, av, envp);
-	close_pipes(&pipex);
-	
-	
-
-
-	
-
-
-
-
+	close_ends(&pipex);
+	waitpid(pipex->pid1, NULL, 0);
+	waitpid(pipex->pid2, NULL, 0);
+	parent_free(&pipex);
+	return (0);
 }
