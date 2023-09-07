@@ -12,18 +12,6 @@
 
 #include "pipex.h"
 
-int	msg(char *error)
-{
-	write(2, error, ft_strlen(error));
-	return (1);
-}
-
-int	error_msg(char *error)
-{
-	perror(error);
-	exit (1);
-}
-
 char	*find_path(char **envp)
 {
 	while (ft_strncmp("PATH", *envp, 4) != 0)
@@ -45,12 +33,12 @@ int	main(int ac, char **av, char **envp)
 		return (msg("Error in number of arguments."));
 	pipex->in_fd = open(av[1], O_RDONLY);
 	if (pipex->in_fd < 0)
-		error_msg("Infile error.\n");
+		error_exit("Infile error.\n");
 	pipex->out_fd = open(av[4], O_TRUNC | O_CREAT | O_RDWR, 0777);
 	if (out_fd < 0)
-		error_msg("Outfile error.\n");
+		error_exit("Outfile error.\n");
 	if (pipe(pipex->tube) < 0)
-		error_msg("Pipe error.\n");
+		error_exit("Pipe error.\n");
 	pipex->path = find_path(envp);
 	pipex->cmd_paths = ft_split(pipex->path, ':');
 	pipex->pid1 = fork();
@@ -58,10 +46,10 @@ int	main(int ac, char **av, char **envp)
 		child_one(pipex, av, envp);
 	pipex->pid2 = fork();
 	if(pipex->pid2 == 0)
-		second_child(pipex, av, envp);
+		child_two(pipex, av, envp);
 	close_ends(&pipex);
 	waitpid(pipex->pid1, NULL, 0);
 	waitpid(pipex->pid2, NULL, 0);
-	parent_free(&pipex);
+	free_parent(&pipex);
 	return (0);
 }
